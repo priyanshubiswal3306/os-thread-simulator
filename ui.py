@@ -3,6 +3,7 @@ from thread_model import Thread
 from scheduler import RoundRobinScheduler
 from simulator import Simulator
 import threading
+from models import ThreadModel
 
 class App:
     def __init__(self, root):
@@ -16,6 +17,17 @@ class App:
 
         self.start_btn = tk.Button(root, text="Start", command=self.start_sim)
         self.start_btn.pack(pady=10)
+        # 🔽 Multithreading Model Selector
+        self.model_var = tk.StringVar(value="Many-to-One")
+
+        model_menu = tk.OptionMenu(
+            root,
+            self.model_var,
+            "Many-to-One",
+            "One-to-One",
+            "Many-to-Many"
+        )
+        model_menu.pack(pady=5)
 
         self.threads = []
         self.finished_threads = []
@@ -38,6 +50,7 @@ class App:
         self.canvas.create_text(150, 50, text="Ready Queue", font=("Arial", 14))
         self.canvas.create_text(400, 50, text="CPU", font=("Arial", 14))
         self.canvas.create_text(650, 50, text="Finished", font=("Arial", 14))
+        self.canvas.create_text(400, 220, text="Thread Mapping", font=("Arial", 14))
 
     # 🔹 Main drawing function
     def draw_threads(self):
@@ -75,6 +88,18 @@ class App:
             self.canvas.create_text(x+40, 120, text=t.tid)
             x += 100
 
+        self.draw_mapping()
+
+    def draw_mapping(self):
+        model = ThreadModel(self.model_var.get())
+        mapping = model.map_threads(self.threads)
+
+        y = 250
+        for tid, cpu in mapping:
+            text = f"{tid} → {cpu}"
+            self.canvas.create_text(400, y, text=text, font=("Arial", 12))
+            y += 25
+
     # 🔹 Update UI after each step
     def update_ui(self, thread):
         if thread:
@@ -89,3 +114,5 @@ class App:
     # 🔹 Start simulation in separate thread
     def start_sim(self):
         threading.Thread(target=self.simulator.start, daemon=True).start()
+
+    

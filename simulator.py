@@ -8,12 +8,6 @@ class Simulator:
 
     def start(self):
         self.running = True
-        self.run()
-
-    def stop(self):
-        self.running = False
-
-    def run(self):
         while self.running:
             thread = self.scheduler.schedule()
             self.update_callback(thread)
